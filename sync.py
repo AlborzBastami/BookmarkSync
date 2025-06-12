@@ -1,9 +1,8 @@
-"""Merge bookmarks from HTML files or browser profiles."""
+"""Merge bookmark HTML files and remove duplicates."""
 
 from collections import OrderedDict
 from argparse import ArgumentParser
 from parser import parse_bookmarks_html
-from browser_export import extract_firefox_bookmarks, extract_opera_bookmarks
 
 
 def merge_bookmark_lists(list1, list2):
@@ -58,28 +57,16 @@ def export_bookmarks(bookmarks, output_file):
 
 
 def main():
-    parser = ArgumentParser(description="Merge bookmarks from browsers or HTML files.")
-    parser.add_argument("--firefox", action="store_true", help="Use bookmarks from Firefox profile")
-    parser.add_argument("--opera", action="store_true", help="Use bookmarks from Opera profile")
-    parser.add_argument("--output", required=True, help="Output merged HTML file")
-    parser.add_argument("html_files", nargs="*", help="Additional bookmark HTML files")
+    parser = ArgumentParser(description="Merge two bookmark HTML exports.")
+    parser.add_argument("html1", help="First bookmark HTML file")
+    parser.add_argument("html2", help="Second bookmark HTML file")
+    parser.add_argument("output", help="Output merged HTML file")
     args = parser.parse_args()
 
-    sources = []
-    if args.firefox:
-        sources.append(extract_firefox_bookmarks())
-    if args.opera:
-        sources.append(extract_opera_bookmarks())
-    for path in args.html_files:
-        sources.append(parse_bookmarks_html(path))
+    bookmarks1 = parse_bookmarks_html(args.html1)
+    bookmarks2 = parse_bookmarks_html(args.html2)
 
-    if len(sources) < 2:
-        parser.error("Need at least two bookmark sources")
-
-    merged = sources[0]
-    for src in sources[1:]:
-        merged = merge_bookmark_lists(merged, src)
-
+    merged = merge_bookmark_lists(bookmarks1, bookmarks2)
     export_bookmarks(merged, args.output)
     print(f"Merged {len(merged)} bookmarks into {args.output}")
 

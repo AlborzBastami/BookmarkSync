@@ -1,17 +1,13 @@
 # BookmarkSync
 
-A utility to merge bookmarks from Firefox and Opera. It removes duplicates while keeping the folder structure intact.
+A small utility to merge bookmark HTML exports from different browsers and remove duplicates. It can be used to keep Firefox and Opera bookmarks in sync.
 
-## Command line usage
+## Usage
 
-You can merge bookmark HTML exports or pull bookmarks directly from the installed browsers.
+Export the bookmarks from both browsers as HTML files and run:
 
+```bash
+python sync.py firefox.html opera.html merged.html
 ```
-python sync.py --firefox --opera --output merged.html
-```
 
-Additional HTML files can be passed as positional arguments.
-
-## GUI
-
-Run `python gui.py` for a small window with a "Sync Firefox and Opera" button. The merged bookmarks are written to a file that you choose via a file dialog.
+The resulting `merged.html` can be imported back into your browsers.
