@@ -2,6 +2,7 @@
 
 from html.parser import HTMLParser
 
+
 class BookmarkHTMLParser(HTMLParser):
     def __init__(self):
         super().__init__()
@@ -44,6 +45,7 @@ class BookmarkHTMLParser(HTMLParser):
     def handle_data(self, data):
         if self.current_tag in {"h3", "a"}:
             self.current_data += data
+
 
 def parse_bookmarks_html(file_path):
     """Liest eine HTML-Datei ein und gibt eine Liste von Lesezeichen zurück."""

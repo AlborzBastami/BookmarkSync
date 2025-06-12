@@ -32,7 +32,8 @@ def tree_to_html(tree, indent=0):
         if key == "_bookmarks":
             for bm in value:
                 line = (
-                    f'{indent_str}<DT><A HREF="{bm["url"]}" ADD_DATE="{bm["add_date"]}">{bm["title"]}</A>'
+                    f'{indent_str}<DT><A HREF="{bm["url"]}" '
+                    f'ADD_DATE="{bm["add_date"]}">{bm["title"]}</A>'
                 )
                 lines.append(line)
         else:
@@ -47,7 +48,10 @@ def export_bookmarks(bookmarks, output_file):
     tree = build_tree(bookmarks)
     with open(output_file, "w", encoding="utf-8") as f:
         f.write("<!DOCTYPE NETSCAPE-Bookmark-file-1>\n")
-        f.write('<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">\n')
+        f.write(
+            '<META HTTP-EQUIV="Content-Type" '
+            'CONTENT="text/html; charset=UTF-8">\n'
+        )
         f.write("<TITLE>Bookmarks</TITLE>\n")
         f.write("<H1>Bookmarks</H1>\n\n")
         f.write("<DL><p>\n")
