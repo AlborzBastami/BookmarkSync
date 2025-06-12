@@ -1,37 +1,54 @@
-# parser.py
+"""Utilities to parse bookmark HTML exports."""
 
-from bs4 import BeautifulSoup
+from html.parser import HTMLParser
+
+class BookmarkHTMLParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.stack = [{"name": None}]
+        self.bookmarks = []
+        self.current_tag = None
+        self.current_data = ""
+        self.current_attrs = {}
+
+    def handle_starttag(self, tag, attrs):
+        tag = tag.lower()
+        if tag == "dl":
+            self.stack.append({"name": None})
+        elif tag == "h3":
+            self.current_tag = "h3"
+            self.current_data = ""
+        elif tag == "a":
+            self.current_tag = "a"
+            self.current_data = ""
+            self.current_attrs = {k.lower(): v for k, v in attrs}
+
+    def handle_endtag(self, tag):
+        tag = tag.lower()
+        if tag == "dl":
+            if len(self.stack) > 1:
+                self.stack.pop()
+        elif tag == "h3" and self.current_tag == "h3":
+            self.stack[-1]["name"] = self.current_data.strip()
+            self.current_tag = None
+        elif tag == "a" and self.current_tag == "a":
+            path = [d["name"] for d in self.stack if d.get("name")]
+            self.bookmarks.append({
+                "title": self.current_data.strip(),
+                "url": self.current_attrs.get("href"),
+                "folder": path,
+                "add_date": self.current_attrs.get("add_date", ""),
+            })
+            self.current_tag = None
+
+    def handle_data(self, data):
+        if self.current_tag in {"h3", "a"}:
+            self.current_data += data
 
 def parse_bookmarks_html(file_path):
-    """
-    Liest eine HTML-Datei (Bookmark-Export von Firefox/Opera) ein
-    und gibt eine Liste von Lesezeichen mit Titel, URL, Ordnerstruktur zurück.
-    """
+    """Liest eine HTML-Datei ein und gibt eine Liste von Lesezeichen zurück."""
     with open(file_path, "r", encoding="utf-8") as f:
-        soup = BeautifulSoup(f, "lxml")
-
-    bookmarks = []
-
-    def recurse(node, folder_path=[]):
-        for element in node.children:
-            if element.name == "dt":
-                if element.a:
-                    url = element.a.get("href")
-                    title = element.a.get_text()
-                    add_date = element.a.get("add_date", "")
-                    full_path = folder_path.copy()
-                    bookmarks.append({
-                        "title": title,
-                        "url": url,
-                        "folder": full_path,
-                        "add_date": add_date
-                    })
-                elif element.h3:
-                    folder_name = element.h3.get_text()
-                    next_dl = element.find_next_sibling("dl")
-                    recurse(next_dl, folder_path + [folder_name])
-    
-    dl = soup.find("dl")
-    recurse(dl)
-
-    return bookmarks
+        html = f.read()
+    parser = BookmarkHTMLParser()
+    parser.feed(html)
+    return parser.bookmarks
